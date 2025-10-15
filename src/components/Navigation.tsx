@@ -30,7 +30,9 @@ const Navigation = () => {
     },
   ]);
 
-  const notificationRef = useRef(null);
+  // ✅ separate refs for desktop and mobile
+  const desktopNotificationRef = useRef(null);
+  const mobileNotificationRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -38,16 +40,16 @@ const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ✅ updated outside click handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
+        !desktopNotificationRef.current?.contains(event.target) &&
+        !mobileNotificationRef.current?.contains(event.target)
       ) {
         setNotificationsOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -67,7 +69,7 @@ const Navigation = () => {
 
   const markAsRead = (id) => {
     setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
@@ -89,7 +91,7 @@ const Navigation = () => {
     >
       <div className="w-full px-2 sm:px-4">
         <div className="flex items-center justify-between h-20 sm:h-24">
-          {/* Left Section (Logo + Text) */}
+          {/* Logo Section */}
           <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink min-w-0">
             {!logoLoadError ? (
               <img
@@ -118,8 +120,8 @@ const Navigation = () => {
               </a>
             ))}
 
-            {/* Notification Bell */}
-            <div className="relative" ref={notificationRef}>
+            {/* Desktop Notifications */}
+            <div className="relative" ref={desktopNotificationRef}>
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="relative text-gray-200 hover:text-[#00D4FF] p-2 transition-all duration-300"
@@ -133,10 +135,8 @@ const Navigation = () => {
                 )}
               </button>
 
-              {/* Notification Dropdown */}
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-[#0A2540] border border-[#00D4FF]/30 rounded-lg shadow-2xl overflow-hidden">
-                  {/* Header */}
                   <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#0078FF]/20 px-4 py-3 border-b border-[#00D4FF]/30">
                     <div className="flex items-center justify-between">
                       <h3 className="text-white font-semibold text-sm">
@@ -153,8 +153,6 @@ const Navigation = () => {
                       )}
                     </div>
                   </div>
-
-                  {/* Notifications List */}
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map((notification) => (
@@ -207,10 +205,9 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Mobile Menu Button + Notification Bell */}
+          {/* Mobile Menu + Notifications */}
           <div className="md:hidden flex items-center gap-2 pr-2 sm:pr-4 flex-shrink-0">
-            {/* Mobile Notification Bell */}
-            <div className="relative" ref={notificationRef}>
+            <div className="relative" ref={mobileNotificationRef}>
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="relative text-white hover:text-[#00D4FF] p-2"
@@ -224,7 +221,6 @@ const Navigation = () => {
                 )}
               </button>
 
-              {/* Mobile Notification Dropdown */}
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-[#0A2540] border border-[#00D4FF]/30 rounded-lg shadow-2xl overflow-hidden">
                   <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#0078FF]/20 px-4 py-3 border-b border-[#00D4FF]/30">
@@ -243,7 +239,6 @@ const Navigation = () => {
                       )}
                     </div>
                   </div>
-
                   <div className="max-h-80 overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map((notification) => (
@@ -295,23 +290,17 @@ const Navigation = () => {
               )}
             </div>
 
-            {/* Hamburger Menu */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-white hover:text-[#00D4FF] p-2"
               aria-label="Toggle menu"
             >
-              {isOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
       {isOpen && (
         <div className="md:hidden bg-[#0A2540]/98 backdrop-blur-md">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
